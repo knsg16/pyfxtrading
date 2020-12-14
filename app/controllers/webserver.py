@@ -1,6 +1,8 @@
 from flask import Flask
 from flask import render_template
 
+from app.models.dfcandle import DataFrameCandle
+
 import settings
 
 app = Flask(__name__, template_folder='../views')
@@ -12,8 +14,10 @@ def remove_session(ex=None):
 
 @app.route('/')
 def index():
-    app.logger.info('index')
-    return render_template('./google.html', word="World")
+    df = DataFrameCandle(settings.product_code, settings.trade_duration)
+    df.set_all_candles(settings.past_period)
+    candles = df.candles
+    return render_template('./google.html', candles=candles)
 
 def start():
     app.run(host='0.0.0.0', port=settings.web_port, threaded=True)
