@@ -12,9 +12,14 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
 if __name__ == "__main__":
 
-    streamThread = Thread(target=stream.stream_integration_data)
-    streamThread.start()
-    streamThread.join()
+    # streamThread = Thread(target=stream.stream_integration_data)
+    # streamThread.start()
+    # streamThread.join()
+
+    from app.models.dfcandle import DataFrameCandle
+    df = DataFrameCandle(settings.product_code, settings.trade_duration)
+    df.set_all_candles(settings.past_period)
+    print(df.value)
 
 
 
