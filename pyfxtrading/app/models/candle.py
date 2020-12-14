@@ -115,4 +115,3 @@ def create_candle_with_duration(product_code, duration, ticker):
     current_candle.close = price
     current_candle.save()
     return False
-

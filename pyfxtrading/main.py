@@ -12,11 +12,11 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
 
 if __name__ == "__main__":
-    streamThread = Thread(target=stream.stream_ingestion_data)
+    # streamThread = Thread(target=stream.stream_ingestion_data)
     serverThread = Thread(target=start)
 
-    streamThread.start()
+    # streamThread.start()
     serverThread.start()
 
-    streamThread.join()
+    # streamThread.join()
     serverThread.join()
