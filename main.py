@@ -12,11 +12,21 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
 
 if __name__ == "__main__":
-    streamThread = Thread(target=stream.stream_ingestion_data)
-    serverThread = Thread(target=start)
+    # streamThread = Thread(target=stream.stream_ingestion_data)
+    # serverThread = Thread(target=start)
+    #
+    # streamThread.start()
+    # serverThread.start()
+    #
+    # streamThread.join()
+    # serverThread.join()
 
-    streamThread.start()
-    serverThread.start()
+    from app.models.dfcandle import DataFrameCandle
+    import talib
+    import numpy as np
 
-    streamThread.join()
-    serverThread.join()
+    df = DataFrameCandle(settings.product_code, settings.trade_duration)
+    df.set_all_candles(100)
+    df.add_sma(7)
+    print(df.value)
+
