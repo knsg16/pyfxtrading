@@ -2,9 +2,13 @@ import numpy as np
 import talib
 
 from app.models.candle import factory_candle_class
+import settings
 from utils.utils import Serializer
 
-import settings
+
+def nan_to_zero(values: np.asarray):
+    values[np.isnan(values)] = 0
+    return values
 
 
 def empty_to_none(input_list):
@@ -13,13 +17,13 @@ def empty_to_none(input_list):
     return input_list
 
 
-def nan_to_zero(values: np.asarray):
-    values[np.isnan(values)] = 0
-    return values
-
-
 class Sma(Serializer):
+    def __init__(self, period: int, values: list):
+        self.period = period
+        self.values = values
 
+
+class Ema(Serializer):
     def __init__(self, period: int, values: list):
         self.period = period
         self.values = values
@@ -33,6 +37,7 @@ class DataFrameCandle(object):
         self.candle_cls = factory_candle_class(self.product_code, self.duration)
         self.candles = []
         self.smas = []
+        self.emas = []
 
     def set_all_candles(self, limit=1000):
         self.candles = self.candle_cls.get_all_candles(limit)
@@ -44,7 +49,8 @@ class DataFrameCandle(object):
             'product_code': self.product_code,
             'duration': self.duration,
             'candles': [c.value for c in self.candles],
-            'smas': empty_to_none([s.value for s in self.smas])
+            'smas': empty_to_none([s.value for s in self.smas]),
+            'emas': empty_to_none([s.value for s in self.emas])
         }
 
     @property
@@ -93,3 +99,16 @@ class DataFrameCandle(object):
             self.smas.append(sma)
             return True
         return False
+
+    def add_ema(self, period: int):
+
+        if len(self.closes) > period:
+            values = talib.EMA(np.asarray(self.closes), period)
+            ema = Ema(
+                period,
+                nan_to_zero(values).tolist()
+            )
+            self.emas.append(ema)
+            return True
+        return False
+
