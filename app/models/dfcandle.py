@@ -4,6 +4,7 @@ import talib
 from app.models.candle import factory_candle_class
 import settings
 from utils.utils import Serializer
+from tradingalgo.algo import ichimoku_cloud
 
 
 def nan_to_zero(values: np.asarray):
@@ -37,6 +38,14 @@ class BBands(Serializer):
         self.mid = mid
         self.down = down
 
+class IchimokuCloud(Serializer):
+    def __init__(self, tenkan: list, kijun: list, senkou_a: list, senkou_b: list, chikou: list):
+        self.tenkan = tenkan
+        self.kijun = kijun
+        self.senkou_a = senkou_a
+        self.senkou_b = senkou_b
+        self.chikou = chikou
+
 
 class DataFrameCandle(object):
 
@@ -48,6 +57,7 @@ class DataFrameCandle(object):
         self.smas = []
         self.emas = []
         self.bbands = BBands(0, 0, [], [], [])
+        self.ichimoku_cloud = IchimokuCloud([], [], [], [], [])
 
     def set_all_candles(self, limit=1000):
         self.candles = self.candle_cls.get_all_candles(limit)
@@ -61,7 +71,8 @@ class DataFrameCandle(object):
             'candles': [c.value for c in self.candles],
             'smas': empty_to_none([s.value for s in self.smas]),
             'emas': empty_to_none([s.value for s in self.emas]),
-            'bbands': self.bbands.value
+            'bbands': self.bbands.value,
+            'ichimoku': self.ichimoku_cloud.value
         }
 
     @property
@@ -130,5 +141,14 @@ class DataFrameCandle(object):
             mid_list = nan_to_zero(mid).tolist()
             down_list = nan_to_zero(down).tolist()
             self.bbands = BBands(n, k, up_list, mid_list, down_list)
+            return True
+        return False
+
+    def add_ichimoku(self):
+        if len(self.closes) >= 9:
+            tenkan, kijun, senkou_a, senkou_b, chikou = ichimoku_cloud(self.closes)
+            self.ichimoku_cloud = IchimokuCloud(
+                tenkan, kijun, senkou_a, senkou_b, chikou
+            )
             return True
         return False
