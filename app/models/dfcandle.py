@@ -2,6 +2,7 @@ import numpy as np
 import talib
 
 from app.models.candle import factory_candle_class
+from app.models.events import SignalEvents
 import settings
 from utils.utils import Serializer
 from tradingalgo.algo import ichimoku_cloud
@@ -78,6 +79,7 @@ class DataFrameCandle(object):
         self.ichimoku_cloud = IchimokuCloud([], [], [], [], [])
         self.rsi = Rsi(0, [])
         self.macd = Macd(0, 0, 0, [], [], [])
+        self.events = SignalEvents()
 
     def set_all_candles(self, limit=1000):
         self.candles = self.candle_cls.get_all_candles(limit)
@@ -95,6 +97,7 @@ class DataFrameCandle(object):
             'ichimoku': self.ichimoku_cloud.value,
             'rsi': self.rsi.value,
             'macd': self.macd.value,
+            'events': self.events.value,
         }
 
     @property
@@ -198,3 +201,9 @@ class DataFrameCandle(object):
             return True
         return False
 
+    def add_event(self, time):
+        signal_events = SignalEvents.get_signal_events_after_time(time)
+        if len(signal_events.signals) > 0:
+            self.events = signal_events
+            return True
+        return False
