@@ -12,23 +12,23 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
 
 if __name__ == "__main__":
-    from app.models.events import SignalEvent
+    from app.models.events import SignalEvents
     import datetime
     import settings
     import constants
 
     now =datetime.datetime.utcnow()
-    s = SignalEvent(time=now, product_code=settings.product_code, side=constants.BUY, price=100.0, units=1)
-    s.save()
+    # s = SignalEvent(time=now, product_code=settings.product_code, side=constants.BUY, price=100.0, units=1)
+    # s.save()
 
-    signal_events = SignalEvent.get_signal_events_by_count(10)
-    for signal_event in signal_events:
-        print(signal_event.value)
+    signal_events = SignalEvents.get_signal_events_by_count(10)
+    print(signal_events.value)
 
-    now = now - datetime.timedelta(minutes=10)
-    signal_events = SignalEvent.get_signal_events_after_time(now)
-    for signal_event in signal_events:
-        print(signal_event.value)
+    print(signal_events.sell(settings.product_code, now, 110.0, 1, True))
+
+    # now = now - datetime.timedelta(minutes=1000)
+    # signal_events = SignalEvents.get_signal_events_after_time(now)
+    # print(signal_events.value)
 
 
 

@@ -57,3 +57,75 @@ class SignalEvent(Base):
                 return []
 
             return rows
+
+class SignalEvents(object):
+    def __init__(self, signals=None):
+        if signals is None:
+            self.signals = []
+        else:
+            self.signals = signals
+
+    def can_buy(self, time):
+        if len(self.signals) == 0:
+            return True
+
+        last_signal = self.signals[-1]
+        if last_signal.side == constants.SELL and last_signal.time < time:
+            return True
+
+        return False
+
+    def can_sell(self, time):
+        if len(self.signals) == 0:
+            return False
+
+        last_signal = self.signals[-1]
+        if last_signal.side == constants.BUY and last_signal.time < time:
+            return True
+
+        return False
+
+    def buy(self, product_code, time, price, units, save):
+        if not self.can_buy(time):
+            return False
+
+        signal_event = SignalEvent(
+            time=time, product_code=product_code, side=constants.BUY, price=price, units=units
+        )
+        if save:
+            signal_event.save()
+
+        self.signals.append(signal_event)
+        return True
+
+    def sell(self, product_code, time, price, units, save):
+        if not self.can_sell(time):
+            return False
+
+        signal_event = SignalEvent(
+            time=time, product_code=product_code, side=constants.SELL, price=price, units=units
+        )
+        if save:
+            signal_event.save()
+
+        self.signals.append(signal_event)
+        return True
+
+    @staticmethod
+    def get_signal_events_by_count(count: int):
+        signal_events = SignalEvent.get_signal_events_by_count(count)
+        return SignalEvents(signal_events)
+
+    @staticmethod
+    def get_signal_events_after_time(time: datetime.datetime.time):
+        signal_events = SignalEvent.get_signal_events_after_time(time)
+        return SignalEvents(signal_events)
+
+    @property
+    def value(self):
+        signals = [s.value for s in self.signals]
+        if not signals:
+            signals = None
+        return {
+            'signals': signals,
+        }
