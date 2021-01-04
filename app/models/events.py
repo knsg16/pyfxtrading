@@ -122,10 +122,37 @@ class SignalEvents(object):
         return SignalEvents(signal_events)
 
     @property
+    def profit(self):
+        total = 0.0
+        before_sell = 0.0
+        is_holding = False
+
+        for i in range(len(self.signals)):
+            signal_event = self.signals[i]
+            if i == 0 and signal_event.side == constants.SELL:
+                continue
+            if signal_event.side == constants.BUY:
+                total -= signal_event.price * signal_event.units
+                is_holding = True
+            if signal_event.side == constants.SELL:
+                total += signal_event.price * signal_event.units
+                is_holding = False
+                before_sell = total
+        if is_holding:
+            return before_sell
+        return total
+
+    @property
     def value(self):
         signals = [s.value for s in self.signals]
         if not signals:
             signals = None
+
+        profit = self.profit
+        if not self.profit:
+            profit = None
+
         return {
             'signals': signals,
+            'profit': profit,
         }
