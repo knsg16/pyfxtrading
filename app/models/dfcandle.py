@@ -245,3 +245,37 @@ class DataFrameCandle(object):
 
         return performanse, period_1, period_2
 
+    def back_test_bb(self, n:int, k:float):
+        if len(self.candles) <= n:
+            return None
+
+        signal_events = SignalEvents()
+        bb_up, _, bb_down = talib.BBANDS(np.array(self.closes), n, k, k, 0);
+        for i in range(1, len(self.candles)):
+            if i < n:
+                continue
+
+            if bb_down[i-1] > self.candles[i-1].close and bb_down[i] <= self.candles[i].close:
+                signal_events.buy(product_code=self.product_code, time=self.candles[i].time, price=self.candles[i].close, units=1.0, save=False)
+            if bb_down[i-1] < self.candles[i-1].close and bb_down[i] >= self.candles[i].close:
+                signal_events.sell(product_code=self.product_code, time=self.candles[i].time, price=self.candles[i].close, units=1.0, save=False)
+
+        return signal_events
+
+    def optimize_bb(self):
+        performanse = 0
+        best_n = 20
+        best_k = 2.0
+
+        for n in range(10, 20):
+            for k in np.arange(1.9, 2.1, 0.1):
+                signal_events = self.back_test_bb(n, k)
+                if signal_events is None:
+                    continue
+                profit = signal_events.profit
+                if performanse < profit:
+                    performanse = profit
+                    best_n = n
+                    best_k = k
+
+        return performanse, best_n, best_k

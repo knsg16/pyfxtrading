@@ -14,16 +14,16 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 if __name__ == "__main__":
 
     from app.models.dfcandle import DataFrameCandle
-    df = DataFrameCandle()
-    df.set_all_candles(limit=1000)
-    print(df.optimize_ema())
+    # df = DataFrameCandle()
+    # df.set_all_candles()
+    # print(df.optimize_bb())
 
-    # streamThread = Thread(target=stream.stream_ingestion_data)
-    # serverThread = Thread(target=start)
-    #
-    # streamThread.start()
-    # serverThread.start()
-    #
-    # streamThread.join()
-    # serverThread.join()
+    streamThread = Thread(target=stream.stream_ingestion_data)
+    serverThread = Thread(target=start)
+
+    streamThread.start()
+    serverThread.start()
+
+    streamThread.join()
+    serverThread.join()
 
